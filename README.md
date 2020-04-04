@@ -15,3 +15,6 @@ go install github.com/NavenduDuari/gocoin
 ```bash
 gocoin --help
 ```
+
+## Screenshot
+![ex1](./ex1.png)

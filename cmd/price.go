@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/NavenduDuari/gocoin/cmd/utils"
 
@@ -49,10 +48,10 @@ var priceCmd = &cobra.Command{
 	Long: `To check price of crypto-currencies. For example:
 
 gocoin check price					//This gives prices with default coin & currency
-gocoin check price --coin BTC --conv INR		//This gives price of BTC in INR`,
+gocoin check price --coin=LTC,BNB --conv=INR		//This gives price of BTC in INR`,
 	Run: func(cmd *cobra.Command, args []string) {
-		conv, _ := cmd.Flags().GetBool("conv")
-		coin, _ := cmd.Flags().GetBool("coin")
+		conv, _ := cmd.Flags().GetString("conv")
+		coin, _ := cmd.Flags().GetString("coin")
 		suggest, _ := cmd.Flags().GetBool("suggest")
 		if suggest {
 			getSuggestion()
@@ -65,8 +64,8 @@ gocoin check price --coin BTC --conv INR		//This gives price of BTC in INR`,
 func init() {
 	checkCmd.AddCommand(priceCmd)
 
-	priceCmd.Flags().BoolP("coin", "", false, "Let us choose coin")
-	priceCmd.Flags().BoolP("conv", "", false, "Let us choose currency")
+	priceCmd.Flags().StringP("coin", "", "", "Let us choose coin")
+	priceCmd.Flags().StringP("conv", "", "", "Let us choose currency")
 	priceCmd.Flags().BoolP("suggest", "s", false, "Gives suggestion")
 }
 
@@ -78,15 +77,15 @@ func getKeyValue() string {
 	}
 	return key
 }
-func getPrice(coin bool, conv bool, args []string) {
+func getPrice(coin string, conv string, args []string) {
 	key = getKeyValue()
-	if coin {
-		ids = "&ids=" + strings.Join(args, ",")
+	if len(coin) > 0 {
+		ids = "&ids=" + coin
 	}
 
-	if conv {
-		convert = "&convert=" + args[0]
-		currencySymbol = utils.CurrencyDetails[args[0]].Symbol
+	if len(conv) > 0 {
+		convert = "&convert=" + conv
+		currencySymbol = utils.CurrencyDetails[conv].Symbol
 	}
 	finalUrl := baseUrl + key + ids + "&interval=1d" + convert
 

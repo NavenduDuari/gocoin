@@ -1,7 +1,6 @@
 package utils
 
 var CoinDetails = map[string]string{
-	"ID":   "NAME",
 	"BTC":  "Bitcoin",
 	"ETH":  "Ethereum",
 	"XRP":  "Ripple",

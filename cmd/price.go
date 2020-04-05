@@ -3,34 +3,25 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"html"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/NavenduDuari/gocoin/cmd/utils"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-type CoinDataArr []CoinData
-type CoinData struct {
+type coinData struct {
 	Id     string `json:"id"`
 	Name   string `json:"name"`
 	Price  string `json:"price"`
 	Rank   string `json:"rank"`
 	OneDay oneDay `json:"1D"`
 }
+
 type oneDay struct {
 	PriceChange string `json:"price_change"`
-}
-
-type CoinMetaDataArr []CoinMetaData
-type CoinMetaData struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
 }
 
 var (
@@ -41,7 +32,6 @@ var (
 	currencySymbol = utils.CurrencyDetails["INR"].Symbol
 )
 
-// priceCmd represents the price command
 var priceCmd = &cobra.Command{
 	Use:   "price",
 	Short: "To check price of crypto-currencies",
@@ -69,14 +59,6 @@ func init() {
 	priceCmd.Flags().BoolP("suggest", "s", false, "Gives suggestion")
 }
 
-func getKeyValue() string {
-	key = viper.GetString("key.nomics")
-	if key == "" {
-		fmt.Println("No key is set. Please set one.")
-		os.Exit(1)
-	}
-	return key
-}
 func getPrice(coin string, conv string, args []string) {
 	key = getKeyValue()
 	if len(coin) > 0 {
@@ -96,44 +78,23 @@ func getPrice(coin string, conv string, args []string) {
 	}
 
 	responseData, _ := ioutil.ReadAll(res.Body)
-	var coinDataArrObj CoinDataArr
+	var coinDataArrObj []coinData
 	json.Unmarshal(responseData, &coinDataArrObj)
 
-	//printing data
 	showPrice(coinDataArrObj)
 }
 
-func showPrice(coinDataArrObj CoinDataArr) {
+func showPrice(coinDataArrObj []coinData) {
 	for _, coin := range coinDataArrObj {
 		priceChange, _ := strconv.ParseFloat(coin.OneDay.PriceChange, 64)
 		price, _ := strconv.ParseFloat(coin.Price, 64)
 		priceChangePercent := fmt.Sprintf("%.2f", priceChange/(priceChange+price)*100)
-		fmt.Print("Coin: ", utils.Cyan, coin.Name, utils.Yellow, "(", coin.Id, ")", utils.Reset, " ")
+		utils.PrintCoinInfo(coin.Id, coin.Name)
 		if priceChange < 0 {
-			down := html.UnescapeString("&#" + "11015" + ";")
-			fmt.Print("Price: ", utils.Red, currencySymbol, coin.Price, "(", priceChangePercent, "%)", down, utils.Reset, " ")
+			utils.PrintPriceDown(currencySymbol, coin.Price, priceChangePercent)
 		} else {
-			up := html.UnescapeString("&#" + "11014" + ";")
-			fmt.Print("Price: ", utils.Green, currencySymbol, coin.Price, "(+", priceChangePercent, "%)", up, utils.Reset, " ")
+			utils.PrintPriceUp(currencySymbol, coin.Price, priceChangePercent)
 		}
-		fmt.Print("Rank: ", utils.Blue, coin.Rank, utils.Reset, "\n")
-	}
-}
-
-func getSuggestion() {
-	//Coin suggestion
-	fmt.Println(utils.Green, "Use coin Id with --coin flag", utils.Reset)
-	for id, name := range utils.CoinDetails {
-		fmt.Print("Id: ", utils.Yellow, id, utils.Reset)
-		fmt.Println("  Name: ", utils.Cyan, name, utils.Reset)
-	}
-
-	fmt.Println("------------------------------")
-	//conversion currency suggestion
-	fmt.Println(utils.Green, "Use coin Id with --conv flag", utils.Reset)
-	for id, details := range utils.CurrencyDetails {
-		fmt.Print("Id: ", utils.Yellow, id, utils.Reset)
-		fmt.Print(" Symbol: ", utils.Red, details.Symbol, utils.Reset)
-		fmt.Println("  Name:", utils.Cyan, details.Name, utils.Reset)
+		utils.PrintRank(coin.Rank)
 	}
 }

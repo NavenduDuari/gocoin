@@ -1,6 +1,6 @@
 package utils
 
-var CoinDetails = map[string]string{
+var coinDetails = map[string]string{
 	"BTC":  "Bitcoin",
 	"ETH":  "Ethereum",
 	"XRP":  "Ripple",

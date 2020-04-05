@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// keyCmd represents the key command
 var keyCmd = &cobra.Command{
 	Use:   "key",
 	Short: "Manages api key for nomics.com",
@@ -68,7 +67,7 @@ func getKey(args []string) string {
 	return key
 }
 
-func delKey(args []string) { //TODO delete key
+func delKey(args []string) {
 	if len(args) > 1 {
 		fmt.Println("Too many arguments")
 		return
@@ -76,4 +75,13 @@ func delKey(args []string) { //TODO delete key
 
 	viper.Set("key.nomics", "")
 	viper.WriteConfig()
+}
+
+func getKeyValue() string {
+	key = viper.GetString("key.nomics")
+	if key == "" {
+		fmt.Println("No key is set. Please set one.")
+		os.Exit(1)
+	}
+	return key
 }
